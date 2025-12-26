@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api";
+// Use relative API path so Vite can proxy in development and avoid CORS
+const API_URL = "/api";
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -13,7 +14,8 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (!config.headers) config.headers = {};
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
@@ -44,6 +46,7 @@ export const jobsAPI = {
   createJob: (data) => apiClient.post("/jobs", data),
   updateJob: (id, data) => apiClient.put(`/jobs/${id}`, data),
   deleteJob: (id) => apiClient.delete(`/jobs/${id}`),
+  getMyJobs: () => apiClient.get("/jobs/recruiter/my-jobs"),
 };
 
 export const applicationsAPI = {
@@ -53,6 +56,19 @@ export const applicationsAPI = {
     }),
   getMyApplications: () => apiClient.get(`/applications/me/my-applications`),
   getApplicationsForJob: (jobId) => apiClient.get(`/applications/${jobId}`),
+  getJobApplications: (jobId) =>
+    apiClient.get(`/applications/job/${jobId}/applications`),
+  getRecruiterApplications: () =>
+    apiClient.get("/applications/recruiter/all-applications"),
+  updateApplicationStatus: (applicationId, status) =>
+    apiClient.put(`/applications/${applicationId}/status`, { status }),
+};
+
+export const recruiterAPI = {
+  updateCompanyProfile: (data) =>
+    apiClient.put("/recruiter/company-profile", data),
+  getCompanyProfile: () => apiClient.get("/recruiter/company-profile"),
+  getRecruiterDashboard: () => apiClient.get("/recruiter/dashboard"),
 };
 
 export const adminAPI = {

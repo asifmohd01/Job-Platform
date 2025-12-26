@@ -8,6 +8,14 @@ const applicationSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    candidateDetails: {
+      name: String,
+      email: String,
+      phone: String,
+      skills: [String],
+      experience: Number,
+      currentCompany: String,
+    },
     resume: {
       url: String,
       public_id: String,
@@ -15,9 +23,10 @@ const applicationSchema = new mongoose.Schema(
     coverLetter: { type: String },
     status: {
       type: String,
-      enum: ["applied", "accepted", "rejected"],
+      enum: ["applied", "shortlisted", "interviewed", "accepted", "rejected"],
       default: "applied",
     },
+    appliedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

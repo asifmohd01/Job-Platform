@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { authAPI } from "../services/apiClient";
+import apiClient, { authAPI } from "../services/apiClient";
 
 const AuthContext = createContext();
 
@@ -13,6 +13,10 @@ export function AuthProvider({ children }) {
     setUser(userData);
     setToken(authToken);
     localStorage.setItem("token", authToken);
+    // Ensure axios has the Authorization header for subsequent requests
+    if (authToken) {
+      apiClient.defaults.headers.common.Authorization = `Bearer ${authToken}`;
+    }
   };
 
   // load current user when token exists
@@ -22,6 +26,8 @@ export function AuthProvider({ children }) {
     let mounted = true;
     (async () => {
       try {
+        // ensure axios has header when loading on refresh
+        apiClient.defaults.headers.common.Authorization = `Bearer ${t}`;
         const { data } = await authAPI.me();
         if (mounted) {
           const userData = data.user;
@@ -46,6 +52,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
+    // remove axios auth header
+    delete apiClient.defaults.headers.common.Authorization;
   };
 
   return (

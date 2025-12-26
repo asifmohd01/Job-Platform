@@ -1,3 +1,49 @@
+# Job-Platform (VERSION-0)
+
+This repository is a Version-0 foundation for a full-stack Job Portal Platform.
+It implements a production-ready architecture with clean separation of concerns
+and scaffolding for future AI and MCP features.
+
+Quick start
+
+1. Backend
+
+```bash
+cd server
+npm install
+npm run dev
+```
+
+Server runs on http://localhost:5000 by default.
+
+2. Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Frontend runs via Vite (http://localhost:5173 or other free port).
+
+Features implemented (Version-0)
+
+- JWT auth, role-based access control
+- Job CRUD APIs, applications with resume upload (Cloudinary)
+- React + Vite frontend with Tailwind CSS
+- Layout components: `MainLayout`, `AuthLayout`, `Navbar`, `Sidebar`
+- AI & MCP scaffolding (no AI logic)
+
+Next steps
+
+- Complete UI conversion to SaaS-style components
+- Add admin panels and dashboards
+- Add tests and CI
+
+Environment
+
+- Copy `.env.example` to `.env` and set `MONGODB_URI`, `JWT_SECRET`, and Cloudinary keys.
+
 # Job Portal - Foundation MVP (Version-0)
 
 ## 🚀 Project Overview
@@ -422,5 +468,6 @@ For issues or questions, refer to the API endpoints section or check individual 
 ---
 
 **Built with ❤️ as an MVP Foundation** | Ready to scale to enterprise
-#   J o b - P l a t f o r m  
+#   J o b - P l a t f o r m 
+ 
  

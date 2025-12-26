@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { jobsAPI } from "../services/apiClient";
+import { jobsAPI, applicationsAPI, recruiterAPI } from "../services/apiClient";
 
 export default function RecruiterDashboard() {
   const { user } = useAuth();
@@ -11,6 +11,9 @@ export default function RecruiterDashboard() {
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingJobId, setEditingJobId] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [showApplications, setShowApplications] = useState(false);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -39,18 +42,8 @@ export default function RecruiterDashboard() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const { data } = await jobsAPI.getJobs();
-      // Filter to show only recruiter's jobs
-      const all = Array.isArray(data.jobs) ? data.jobs : [];
-      const my = all.filter((j) => {
-        if (!j || !j.recruiter) return false;
-        // recruiter may be populated object or id
-        const rid = typeof j.recruiter === 'object' ? j.recruiter._id : j.recruiter;
-        return (
-          rid === user?.id || rid === user?.id?.toString() || rid === user?._id
-        );
-      });
-      setJobs(my);
+      const { data } = await jobsAPI.getMyJobs();
+      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
       setError("");
     } catch (err) {
       setError("Failed to load jobs.");
@@ -59,6 +52,28 @@ export default function RecruiterDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      setApplicationsLoading(true);
+      const { data } = await applicationsAPI.getRecruiterApplications();
+      setApplications(
+        Array.isArray(data.applications) ? data.applications : []
+      );
+    } catch (err) {
+      console.error("Failed to load applications:", err);
+      setApplications([]);
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const toggleApplications = () => {
+    if (!showApplications) {
+      fetchApplications();
+    }
+    setShowApplications(!showApplications);
   };
 
   const handleInputChange = (e) => {
@@ -148,12 +163,13 @@ export default function RecruiterDashboard() {
   };
 
   const handleEdit = (jobId) => {
-    const job = jobs.find(j => j._id === jobId);
+    const job = jobs.find((j) => j._id === jobId);
     if (job) {
-      const company = job.company && typeof job.company === 'object' 
-        ? job.company 
-        : { name: "", website: "", about: "", industry: "" };
-      
+      const company =
+        job.company && typeof job.company === "object"
+          ? job.company
+          : { name: "", website: "", about: "", industry: "" };
+
       setFormData({
         title: job.title || "",
         description: job.description || "",
@@ -186,6 +202,18 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const handleUpdateApplicationStatus = async (applicationId, newStatus) => {
+    try {
+      await applicationsAPI.updateApplicationStatus(applicationId, newStatus);
+      alert(`Application status updated to ${newStatus}!`);
+      fetchApplications();
+    } catch (err) {
+      alert(
+        err.response?.data?.message || "Failed to update application status"
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -208,24 +236,34 @@ export default function RecruiterDashboard() {
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <p className="text-gray-400 text-sm mb-2">Total Applications</p>
             <p className="text-4xl font-bold text-blue-400">
-              {jobs.reduce((sum, job) => sum + (job.applicationsCount || 0), 0)}
+              {applications.length}
             </p>
           </div>
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <p className="text-gray-400 text-sm mb-2">Company</p>
             <p className="text-lg font-bold text-green-400">
-              {jobs.length > 0 ? jobs[0].company : "Not specified"}
+              {jobs.length > 0
+                ? typeof jobs[0].company === "object"
+                  ? jobs[0].company?.name || "Your Company"
+                  : jobs[0].company
+                : "Not specified"}
             </p>
           </div>
         </div>
 
         {/* Create Job Button */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-4 mb-8 flex-wrap">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition"
           >
             {showCreateForm ? "✕ Cancel" : "+ Post New Job"}
+          </button>
+          <button
+            onClick={toggleApplications}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition"
+          >
+            {showApplications ? "✕ Hide Applications" : "📋 View Applications"}
           </button>
           <a
             href="/jobs"
@@ -470,6 +508,161 @@ export default function RecruiterDashboard() {
           </div>
         )}
 
+        {/* Applications Section */}
+        {showApplications && (
+          <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden mb-8">
+            <div className="p-6 border-b border-gray-700">
+              <h2 className="text-2xl font-bold text-white">Applications</h2>
+            </div>
+
+            {applicationsLoading ? (
+              <div className="p-12 text-center text-gray-400">
+                Loading applications...
+              </div>
+            ) : applications.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="text-gray-400 text-lg">No applications yet.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-700">
+                {applications.map((app) => {
+                  const job = jobs.find(
+                    (j) => j._id === app.job?._id || j._id === app.job
+                  );
+                  const candidate = app.candidateDetails || {};
+
+                  return (
+                    <div
+                      key={app._id}
+                      className="p-6 hover:bg-gray-700 transition"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-white mb-1">
+                            {candidate.name || "Unknown Candidate"}
+                          </h3>
+                          <p className="text-gray-400 text-sm mb-1">
+                            Applied for:{" "}
+                            <span className="text-blue-400">
+                              {job?.title || "Unknown Job"}
+                            </span>
+                          </p>
+                          <p className="text-gray-500 text-xs">
+                            Applied on:{" "}
+                            {new Date(app.appliedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ${
+                            app.status === "applied"
+                              ? "bg-yellow-500 bg-opacity-20 text-yellow-300"
+                              : app.status === "shortlisted"
+                              ? "bg-blue-500 bg-opacity-20 text-blue-300"
+                              : app.status === "interviewed"
+                              ? "bg-purple-500 bg-opacity-20 text-purple-300"
+                              : app.status === "accepted"
+                              ? "bg-green-500 bg-opacity-20 text-green-300"
+                              : "bg-red-500 bg-opacity-20 text-red-300"
+                          }`}
+                        >
+                          {app.status}
+                        </span>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4 mb-4 text-sm text-gray-300">
+                        <div>
+                          <span className="text-gray-500">Email:</span>{" "}
+                          {candidate.email}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Phone:</span>{" "}
+                          {candidate.phone || "N/A"}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Experience:</span>{" "}
+                          {candidate.experience || "N/A"}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">
+                            Current Company:
+                          </span>{" "}
+                          {candidate.currentCompany || "N/A"}
+                        </div>
+                      </div>
+
+                      {candidate.skills && candidate.skills.length > 0 && (
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-500 mb-2">Skills:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {candidate.skills.slice(0, 5).map((skill, idx) => (
+                              <span
+                                key={idx}
+                                className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                            {candidate.skills.length > 5 && (
+                              <span className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs">
+                                +{candidate.skills.length - 5}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 flex-wrap pt-4 border-t border-gray-700">
+                        <button
+                          onClick={() =>
+                            handleUpdateApplicationStatus(
+                              app._id,
+                              "shortlisted"
+                            )
+                          }
+                          disabled={app.status !== "applied"}
+                          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
+                        >
+                          ✓ Shortlist
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateApplicationStatus(
+                              app._id,
+                              "interviewed"
+                            )
+                          }
+                          disabled={app.status !== "shortlisted"}
+                          className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
+                        >
+                          📞 Interview
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateApplicationStatus(app._id, "accepted")
+                          }
+                          disabled={app.status !== "interviewed"}
+                          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
+                        >
+                          ✓ Accept
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateApplicationStatus(app._id, "rejected")
+                          }
+                          disabled={app.status === "accepted"}
+                          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Jobs List */}
         <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
           <div className="p-6 border-b border-gray-700">
@@ -502,86 +695,97 @@ export default function RecruiterDashboard() {
             <div className="divide-y divide-gray-700">
               {jobs.map((job) => {
                 // Ensure company is always a valid object
-                const company = job && job.company && typeof job.company === 'object' 
-                  ? job.company 
-                  : {};
-                
+                const company =
+                  job && job.company && typeof job.company === "object"
+                    ? job.company
+                    : {};
+
                 return (
-                <div key={job._id} className="p-6 hover:bg-gray-700 transition">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-1">
-                        {job.title || "Untitled Job"}
-                      </h3>
-                      <p className="text-gray-400">
-                        {typeof company.name === 'string' ? company.name : "Company"}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/jobs/${job._id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleEdit(job._id)}
-                        className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
-                      >
-                        Edit
-                      </button>
-                      {job.status === "open" && (
+                  <div
+                    key={job._id}
+                    className="p-6 hover:bg-gray-700 transition"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-1">
+                          {job.title || "Untitled Job"}
+                        </h3>
+                        <p className="text-gray-400">
+                          {typeof company.name === "string"
+                            ? company.name
+                            : "Company"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => handleMarkFilled(job._id)}
-                          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                          onClick={() => navigate(`/jobs/${job._id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
                         >
-                          Mark Filled
+                          View
                         </button>
+                        <button
+                          onClick={() => handleEdit(job._id)}
+                          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                        >
+                          Edit
+                        </button>
+                        {job.status === "open" && (
+                          <button
+                            onClick={() => handleMarkFilled(job._id)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                          >
+                            Mark Filled
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(job._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm text-gray-400">
+                      <div>📍 {job.location}</div>
+                      <div>💰 {job.salary}</div>
+                      <div>
+                        📅 {new Date(job.createdAt).toLocaleDateString()}
+                      </div>
+                      <div>📊 {job.jobType}</div>
+                    </div>
+
+                    <p className="text-gray-300 line-clamp-2 mb-2">
+                      {job.description || "No description"}
+                    </p>
+
+                    {company &&
+                      company.about &&
+                      typeof company.about === "string" && (
+                        <p className="text-gray-400 text-sm line-clamp-1 mb-2">
+                          {company.about}
+                        </p>
                       )}
-                      <button
-                        onClick={() => handleDelete(job._id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
-                      >
-                        Delete
-                      </button>
+
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(job.skills) &&
+                        job.skills.slice(0, 3).map((skill, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      {Array.isArray(job.skills) && job.skills.length > 3 && (
+                        <span className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs">
+                          +{job.skills.length - 3}
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm text-gray-400">
-                    <div>📍 {job.location}</div>
-                    <div>💰 {job.salary}</div>
-                    <div>📅 {new Date(job.createdAt).toLocaleDateString()}</div>
-                    <div>📊 {job.jobType}</div>
-                  </div>
-
-                  <p className="text-gray-300 line-clamp-2 mb-2">
-                    {job.description || "No description"}
-                  </p>
-
-                  {company && company.about && typeof company.about === 'string' && (
-                    <p className="text-gray-400 text-sm line-clamp-1 mb-2">
-                      {company.about}
-                    </p>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(job.skills) && job.skills.slice(0, 3).map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                    {Array.isArray(job.skills) && job.skills.length > 3 && (
-                      <span className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs">
-                        +{job.skills.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           )}
         </div>

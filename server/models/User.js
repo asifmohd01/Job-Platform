@@ -14,6 +14,26 @@ const userSchema = new mongoose.Schema(
       url: String,
       public_id: String,
     },
+    // For recruiters - company information
+    company: {
+      name: String,
+      industry: String,
+      website: String,
+      about: String,
+      logo: String,
+    },
+    // For candidates - profile information
+    candidateProfile: {
+      phone: String,
+      location: String,
+      skills: [String],
+      experience: Number,
+      bio: String,
+      resume: {
+        url: String,
+        public_id: String,
+      },
+    },
     isBlocked: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -50,17 +50,17 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-white">
           Personal Details
         </h2>
         {isOwnProfile && (
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded text-sm font-semibold transition ${
               isEditing
-                ? "bg-gray-200 text-gray-800"
+                ? "bg-gray-700 text-white"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
@@ -69,12 +69,12 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {isEditing ? (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
               Country
             </label>
             <input
@@ -84,11 +84,11 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, country: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
             <input
@@ -98,11 +98,11 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, nationality: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
               Work Permit Status
             </label>
             <select
@@ -110,7 +110,7 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, workPermitStatus: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             >
               <option value="">Select Work Permit Status</option>
               <option value="Citizen">Citizen</option>
@@ -128,19 +128,19 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
               }
               className="w-4 h-4"
             />
-            <span className="text-sm text-gray-700">Specially Abled</span>
+            <span className="text-sm text-gray-300">Specially Abled</span>
           </label>
           <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -150,30 +150,30 @@ const PersonalDetails = ({ profile, setProfile, isOwnProfile }) => {
         <div className="grid grid-cols-2 gap-4">
           {formData.country && (
             <div>
-              <p className="text-sm text-gray-600">Country</p>
-              <p className="font-medium text-gray-900">{formData.country}</p>
+              <p className="text-sm text-gray-400">Country</p>
+              <p className="font-medium text-white">{formData.country}</p>
             </div>
           )}
           {formData.nationality && (
             <div>
-              <p className="text-sm text-gray-600">Nationality</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-sm text-gray-400">Nationality</p>
+              <p className="font-medium text-white">
                 {formData.nationality}
               </p>
             </div>
           )}
           {formData.workPermitStatus && (
             <div>
-              <p className="text-sm text-gray-600">Work Permit Status</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-sm text-gray-400">Work Permit Status</p>
+              <p className="font-medium text-white">
                 {formData.workPermitStatus}
               </p>
             </div>
           )}
           {formData.speciallyAbled && (
             <div>
-              <p className="text-sm text-gray-600">Status</p>
-              <p className="font-medium text-gray-900">Specially Abled</p>
+              <p className="text-sm text-gray-400">Status</p>
+              <p className="font-medium text-white">Specially Abled</p>
             </div>
           )}
           {!hasData && (

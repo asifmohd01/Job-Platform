@@ -33,17 +33,17 @@ const ProfileSummary = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-white">
           Professional Summary
         </h2>
         {isOwnProfile && (
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded text-sm font-semibold transition ${
               isEditing
-                ? "bg-gray-200 text-gray-800"
+                ? "bg-gray-700 text-white"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
@@ -52,38 +52,38 @@ const ProfileSummary = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {isEditing ? (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Professional Summary
           </label>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             placeholder="Write a brief professional summary about yourself..."
-            className="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+            className="w-full px-4 py-3 text-white bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-base placeholder-gray-400"
             rows="5"
           />
           <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
           </div>
         </div>
       ) : (
-        <div className="text-gray-700 whitespace-pre-wrap">
+        <div className="text-gray-300 whitespace-pre-wrap">
           {profile.summary || (
             <p className="text-gray-400 italic">No summary added yet</p>
           )}

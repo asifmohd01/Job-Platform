@@ -11,7 +11,9 @@ export default function CandidateDashboard() {
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    applied: 0,
+    shortlisted: 0,
+    interviewed: 0,
     accepted: 0,
     rejected: 0,
   });
@@ -46,7 +48,7 @@ export default function CandidateDashboard() {
         email: app.email || "",
         phone: app.phone || "",
         coverLetter: app.coverLetter || "",
-        status: app.status || "pending",
+        status: app.status || "applied",
         resume: app.resume,
         candidate: app.candidate,
         createdAt: app.createdAt,
@@ -56,14 +58,16 @@ export default function CandidateDashboard() {
       setApplications(appsList);
       setError("");
 
-      // Calculate stats
-      const stats = {
+      // Calculate stats based on server enum: applied, shortlisted, interviewed, accepted, rejected
+      const s = {
         total: appsList.length,
-        pending: appsList.filter((app) => app.status === "pending").length,
-        accepted: appsList.filter((app) => app.status === "accepted").length,
-        rejected: appsList.filter((app) => app.status === "rejected").length,
+        applied: appsList.filter((a) => a.status === "applied").length,
+        shortlisted: appsList.filter((a) => a.status === "shortlisted").length,
+        interviewed: appsList.filter((a) => a.status === "interviewed").length,
+        accepted: appsList.filter((a) => a.status === "accepted").length,
+        rejected: appsList.filter((a) => a.status === "rejected").length,
       };
-      setStats(stats);
+      setStats(s);
     } catch (err) {
       setError("Failed to load applications.");
       console.error(err);
@@ -75,8 +79,12 @@ export default function CandidateDashboard() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
+      case "applied":
         return "bg-yellow-500 bg-opacity-20 text-yellow-200 border-yellow-500";
+      case "shortlisted":
+        return "bg-blue-500 bg-opacity-20 text-blue-200 border-blue-500";
+      case "interviewed":
+        return "bg-purple-500 bg-opacity-20 text-purple-200 border-purple-500";
       case "accepted":
         return "bg-green-500 bg-opacity-20 text-green-200 border-green-500";
       case "rejected":
@@ -100,16 +108,22 @@ export default function CandidateDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-12">
+        <div className="grid md:grid-cols-6 gap-4 mb-12">
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <p className="text-gray-400 text-sm mb-2">Total Applications</p>
             <p className="text-4xl font-bold text-white">{stats.total}</p>
           </div>
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <p className="text-gray-400 text-sm mb-2">Pending</p>
-            <p className="text-4xl font-bold text-yellow-400">
-              {stats.pending}
-            </p>
+            <p className="text-gray-400 text-sm mb-2">Applied</p>
+            <p className="text-4xl font-bold text-yellow-400">{stats.applied}</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <p className="text-gray-400 text-sm mb-2">Shortlisted</p>
+            <p className="text-4xl font-bold text-blue-400">{stats.shortlisted}</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <p className="text-gray-400 text-sm mb-2">Interviewed</p>
+            <p className="text-4xl font-bold text-purple-400">{stats.interviewed}</p>
           </div>
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <p className="text-gray-400 text-sm mb-2">Accepted</p>
@@ -185,7 +199,7 @@ export default function CandidateDashboard() {
                         app.status
                       )}`}
                     >
-                      {typeof app.status === 'string' ? (app.status.charAt(0).toUpperCase() + app.status.slice(1)) : "Pending"}
+                      {typeof app.status === 'string' ? (app.status.charAt(0).toUpperCase() + app.status.slice(1)) : "Applied"}
                     </span>
                   </div>
 

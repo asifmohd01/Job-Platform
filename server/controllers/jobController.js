@@ -1,4 +1,5 @@
 const Job = require("../models/Job");
+const User = require("../models/User");
 
 const createJob = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ const updateJob = async (req, res) => {
     const { id } = req.params;
     const job = await Job.findById(id);
     if (!job) return res.status(404).json({ message: "Job not found" });
-    if (!job.recruiter.equals(req.user._id) && req.user.role !== "admin")
+    if (!job.recruiter.equals(req.user._id))
       return res.status(403).json({ message: "Forbidden" });
     Object.assign(job, req.body);
     await job.save();
@@ -35,7 +36,7 @@ const deleteJob = async (req, res) => {
     const { id } = req.params;
     const job = await Job.findById(id);
     if (!job) return res.status(404).json({ message: "Job not found" });
-    if (!job.recruiter.equals(req.user._id) && req.user.role !== "admin")
+    if (!job.recruiter.equals(req.user._id))
       return res.status(403).json({ message: "Forbidden" });
     await Job.findByIdAndDelete(id);
     res.json({ message: "Job removed" });
@@ -102,3 +103,60 @@ module.exports = {
   getJobById,
   getMyJobs,
 };
+
+// Candidate saved jobs handlers
+const saveJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const job = await Job.findById(id).select("_id title status company");
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    const user = await User.findById(req.user._id);
+    user.savedJobs = user.savedJobs || [];
+    const exists = user.savedJobs.some((j) => j.equals(job._id));
+    if (!exists) user.savedJobs.push(job._id);
+    await user.save();
+
+    return res.json({ saved: true, jobId: job._id });
+  } catch (err) {
+    console.error("Error saving job:", err);
+    res.status(500).json({ message: "Error saving job", error: err.message });
+  }
+};
+
+const unsaveJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(req.user._id);
+    user.savedJobs = (user.savedJobs || []).filter((j) => j.toString() !== id);
+    await user.save();
+    return res.json({ saved: false, jobId: id });
+  } catch (err) {
+    console.error("Error unsaving job:", err);
+    res
+      .status(500)
+      .json({ message: "Error removing saved job", error: err.message });
+  }
+};
+
+const getSavedJobs = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: "savedJobs",
+        populate: { path: "recruiter", select: "name email" },
+      })
+      .select("savedJobs");
+    const jobs = Array.isArray(user?.savedJobs) ? user.savedJobs : [];
+    return res.json({ jobs });
+  } catch (err) {
+    console.error("Error fetching saved jobs:", err);
+    res
+      .status(500)
+      .json({ message: "Error fetching saved jobs", error: err.message });
+  }
+};
+
+module.exports.saveJob = saveJob;
+module.exports.unsaveJob = unsaveJob;
+module.exports.getSavedJobs = getSavedJobs;

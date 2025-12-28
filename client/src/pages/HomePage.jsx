@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Hero Section */}
-      <section className="bg-linear-to-r from-blue-600 to-blue-800 text-white py-20 px-4">
+      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold mb-4">
             Find Your Next Opportunity
@@ -125,13 +125,7 @@ export default function HomePage() {
             </Link>
           ) : (
             <Link
-              to={
-                user.role === "recruiter"
-                  ? "/recruiter-dashboard"
-                  : user.role === "admin"
-                  ? "/admin-dashboard"
-                  : "/candidate-dashboard"
-              }
+              to={user.role === "recruiter" ? "/recruiter-dashboard" : "/candidate-dashboard"}
               className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition"
             >
               Go to Dashboard

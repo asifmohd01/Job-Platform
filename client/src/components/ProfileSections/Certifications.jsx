@@ -88,9 +88,9 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-white">
           Certifications & Licenses
         </h2>
         {isOwnProfile && !isAdding && !editingId && (
@@ -103,13 +103,13 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {/* Add/Edit Form */}
       {isOwnProfile && (isAdding || editingId) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <div className="mb-6 p-4 bg-gray-900 border border-gray-700 rounded-lg space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Certification Name *
             </label>
             <input
@@ -119,11 +119,11 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Issuing Organization *
             </label>
             <input
@@ -136,11 +136,11 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
                   issuingOrganization: e.target.value,
                 })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Year Obtained
             </label>
             <select
@@ -148,7 +148,7 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, year: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             >
               <option value="">Select Year</option>
               {years.map((year) => (
@@ -162,13 +162,13 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
             <button
               onClick={editingId ? handleEdit : handleAdd}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -182,17 +182,17 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
           {certifications.map((cert) => (
             <div
               key={cert._id}
-              className="p-4 border border-gray-200 rounded-lg hover:shadow-sm"
+              className="p-4 border border-gray-700 rounded-lg hover:bg-gray-700"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="grow">
-                  <h3 className="font-semibold text-gray-900">{cert.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Organization:</span>{" "}
+                  <h3 className="font-semibold text-white">{cert.name}</h3>
+                  <p className="text-sm text-gray-300">
+                    <span className="font-medium text-white">Organization:</span>{" "}
                     {cert.issuingOrganization}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">Year:</span> {cert.year}
+                  <p className="text-xs text-gray-400">
+                    <span className="font-medium text-white">Year:</span> {cert.year}
                   </p>
                 </div>
                 {isOwnProfile && (
@@ -202,20 +202,20 @@ const Certifications = ({ profile, setProfile, isOwnProfile }) => {
                         setFormData(cert);
                         setEditingId(cert._id);
                       }}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(cert._id)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Delete
                     </button>
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-2">{cert.year}</p>
+              <p className="text-xs text-gray-400 mt-2">{cert.year}</p>
             </div>
           ))}
         </div>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { jobsAPI, applicationsAPI, recruiterAPI } from "../services/apiClient";
+import { jobsAPI, applicationsAPI } from "../services/apiClient";
+import { aiAPI } from "../services/aiClient";
 
 export default function RecruiterDashboard() {
   const { user } = useAuth();
@@ -9,27 +10,14 @@ export default function RecruiterDashboard() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingJobId, setEditingJobId] = useState(null);
+  // Post job moved to dedicated page
   const [applications, setApplications] = useState([]);
   const [showApplications, setShowApplications] = useState(false);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    location: "",
-    jobType: "full-time",
-    salary: "",
-    skills: "",
-    department: "",
-    experience: "",
-    company: {
-      name: "",
-      website: "",
-      about: "",
-      industry: "",
-    },
-  });
+  //
+  const [matchScores, setMatchScores] = useState({}); // { applicationId: { score, loading, error } }
+  //
+  // form removed from dashboard
 
   useEffect(() => {
     if (user?.role !== "recruiter") {
@@ -76,79 +64,31 @@ export default function RecruiterDashboard() {
     setShowApplications(!showApplications);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith("company.")) {
-      const field = name.replace("company.", "");
-      setFormData((prev) => ({
-        ...prev,
-        company: {
-          ...prev.company,
-          [field]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
+  useEffect(() => {
+    const fetchScores = async () => {
+      if (!showApplications || applications.length === 0) return;
+      const entries = await Promise.all(
+        applications.map(async (app) => {
+          const jobId = app.job?._id || app.job;
+          const candidateId = app.candidate;
+          if (!jobId || !candidateId) return [app._id, { error: "Missing ids" }];
+          try {
+            const { data } = await aiAPI.match(candidateId, jobId);
+            return [app._id, { score: data?.match?.score ?? null }];
+          } catch {
+            return [app._id, { error: "Score failed" }];
+          }
+        })
+      );
+      const mapped = Object.fromEntries(entries);
+      setMatchScores(mapped);
+    };
+    fetchScores();
+  }, [showApplications, applications]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const jobData = {
-        title: formData.title,
-        description: formData.description,
-        location: formData.location,
-        jobType: formData.jobType,
-        salary: formData.salary,
-        skills: formData.skills
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s),
-        department: formData.department,
-        experience: parseInt(formData.experience) || null,
-        company: {
-          name: formData.company.name,
-          website: formData.company.website,
-          about: formData.company.about,
-          industry: formData.company.industry,
-        },
-      };
+  // input handlers not needed
 
-      if (editingJobId) {
-        await jobsAPI.updateJob(editingJobId, jobData);
-        alert("Job updated successfully!");
-        setEditingJobId(null);
-      } else {
-        await jobsAPI.createJob(jobData);
-        alert("Job posted successfully!");
-      }
-
-      setShowCreateForm(false);
-      setFormData({
-        title: "",
-        description: "",
-        location: "",
-        jobType: "full-time",
-        salary: "",
-        skills: "",
-        department: "",
-        experience: "",
-        company: {
-          name: "",
-          website: "",
-          about: "",
-          industry: "",
-        },
-      });
-      fetchJobs();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to save job");
-    }
-  };
+  // submit removed
 
   const handleDelete = async (jobId) => {
     if (window.confirm("Are you sure you want to delete this job?")) {
@@ -162,57 +102,11 @@ export default function RecruiterDashboard() {
     }
   };
 
-  const handleEdit = (jobId) => {
-    const job = jobs.find((j) => j._id === jobId);
-    if (job) {
-      const company =
-        job.company && typeof job.company === "object"
-          ? job.company
-          : { name: "", website: "", about: "", industry: "" };
+  // edit moved to My Jobs / Post Job
 
-      setFormData({
-        title: job.title || "",
-        description: job.description || "",
-        location: job.location || "",
-        jobType: job.jobType || "full-time",
-        salary: job.salary || "",
-        skills: Array.isArray(job.skills) ? job.skills.join(", ") : "",
-        department: job.department || "",
-        experience: job.experience || "",
-        company: {
-          name: company.name || "",
-          website: company.website || "",
-          about: company.about || "",
-          industry: company.industry || "",
-        },
-      });
-      setEditingJobId(jobId);
-      setShowCreateForm(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  // mark filled handled in My Jobs
 
-  const handleMarkFilled = async (jobId) => {
-    try {
-      await jobsAPI.updateJob(jobId, { status: "filled" });
-      alert("Job marked as filled!");
-      fetchJobs();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to update job");
-    }
-  };
-
-  const handleUpdateApplicationStatus = async (applicationId, newStatus) => {
-    try {
-      await applicationsAPI.updateApplicationStatus(applicationId, newStatus);
-      alert(`Application status updated to ${newStatus}!`);
-      fetchApplications();
-    } catch (err) {
-      alert(
-        err.response?.data?.message || "Failed to update application status"
-      );
-    }
-  };
+  // application status updates handled in Job Applications page
 
   return (
     <div className="min-h-screen bg-gray-900 py-12 px-4">
@@ -250,275 +144,36 @@ export default function RecruiterDashboard() {
             </p>
           </div>
         </div>
-
-        {/* Create Job Button */}
+        {/* Navigation */}
         <div className="flex gap-4 mb-8 flex-wrap">
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
+          <Link
+            to="/recruiter-dashboard/post-job"
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition"
           >
-            {showCreateForm ? "✕ Cancel" : "+ Post New Job"}
-          </button>
+            + Post New Job
+          </Link>
+          <Link
+            to="/recruiter-dashboard/my-jobs"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition"
+          >
+            My Jobs
+          </Link>
           <button
             onClick={toggleApplications}
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition"
           >
-            {showApplications ? "✕ Hide Applications" : "📋 View Applications"}
+            {showApplications ? "✕ Hide Applications" : "📋 View All Applications"}
           </button>
-          <a
-            href="/jobs"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition"
-          >
-            Browse All Jobs
-          </a>
         </div>
 
-        {/* Create Job Form */}
-        {showCreateForm && (
-          <div className="bg-gray-800 rounded-lg p-8 border border-gray-700 mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              {editingJobId ? "Edit Job Posting" : "Create New Job Posting"}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Job Title and Department */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Job Title *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="e.g., Senior React Developer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Department
-                  </label>
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="e.g., Engineering"
-                  />
-                </div>
-              </div>
-
-              {/* Company Information Section */}
-              <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Company Information
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Company Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="company.name"
-                      value={formData.company.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="Your company name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Website
-                    </label>
-                    <input
-                      type="url"
-                      name="company.website"
-                      value={formData.company.website}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="https://company.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Industry
-                    </label>
-                    <input
-                      type="text"
-                      name="company.industry"
-                      value={formData.company.industry}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="e.g., Technology, Finance"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Experience Required (years)
-                    </label>
-                    <input
-                      type="number"
-                      name="experience"
-                      value={formData.experience}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="5"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 mt-4">
-                    About Company
-                  </label>
-                  <textarea
-                    name="company.about"
-                    value={formData.company.about}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="Tell candidates about your company..."
-                  />
-                </div>
-              </div>
-
-              {/* Job Details */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Location *
-                  </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="City, State"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Job Type *
-                  </label>
-                  <select
-                    name="jobType"
-                    value={formData.jobType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="full-time">Full-Time</option>
-                    <option value="part-time">Part-Time</option>
-                    <option value="contract">Contract</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Salary Range *
-                  </label>
-                  <input
-                    type="text"
-                    name="salary"
-                    value={formData.salary}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="e.g., $50,000 - $100,000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Required Skills (comma-separated) *
-                  </label>
-                  <input
-                    type="text"
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="React, Node.js, MongoDB"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Job Description *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                  rows="5"
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Write a compelling job description..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition"
-              >
-                {editingJobId ? "Update Job" : "Post Job"}
-              </button>
-              {editingJobId && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingJobId(null);
-                    setShowCreateForm(false);
-                    setFormData({
-                      title: "",
-                      description: "",
-                      location: "",
-                      jobType: "full-time",
-                      salary: "",
-                      skills: "",
-                      department: "",
-                      experience: "",
-                      company: {
-                        name: "",
-                        website: "",
-                        about: "",
-                        industry: "",
-                      },
-                    });
-                  }}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition"
-                >
-                  Cancel
-                </button>
-              )}
-            </form>
-          </div>
-        )}
-
-        {/* Applications Section */}
+        {/* Applications List */}
         {showApplications && (
           <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden mb-8">
             <div className="p-6 border-b border-gray-700">
-              <h2 className="text-2xl font-bold text-white">Applications</h2>
+              <h2 className="text-2xl font-bold text-white">Recent Applications</h2>
             </div>
-
             {applicationsLoading ? (
-              <div className="p-12 text-center text-gray-400">
-                Loading applications...
-              </div>
+              <div className="p-12 text-center text-gray-400">Loading applications...</div>
             ) : applications.length === 0 ? (
               <div className="p-12 text-center">
                 <p className="text-gray-400 text-lg">No applications yet.</p>
@@ -530,29 +185,32 @@ export default function RecruiterDashboard() {
                     (j) => j._id === app.job?._id || j._id === app.job
                   );
                   const candidate = app.candidateDetails || {};
-
+                  const jobId = app.job?._id || app.job;
+                  const candidateId = app.candidate?._id || app.candidate;
                   return (
-                    <div
-                      key={app._id}
-                      className="p-6 hover:bg-gray-700 transition"
-                    >
+                    <div key={app._id} className="p-6 hover:bg-gray-700 transition">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h3 className="text-lg font-bold text-white mb-1">
-                            {candidate.name || "Unknown Candidate"}
-                          </h3>
+                          {candidateId ? (
+                            <button
+                              onClick={() => navigate(`/candidate/${candidateId}`)}
+                              className="text-lg font-bold text-white mb-1 hover:text-blue-300 text-left"
+                            >
+                              {candidate.name || "Unknown Candidate"}
+                            </button>
+                          ) : (
+                            <h3 className="text-lg font-bold text-white mb-1">
+                              {candidate.name || "Unknown Candidate"}
+                            </h3>
+                          )}
                           <p className="text-gray-400 text-sm mb-1">
-                            Applied for:{" "}
-                            <span className="text-blue-400">
-                              {job?.title || "Unknown Job"}
-                            </span>
+                            Applied for: <span className="text-blue-400">{job?.title || "Unknown Job"}</span>
                           </p>
                           <p className="text-gray-500 text-xs">
-                            Applied on:{" "}
-                            {new Date(app.appliedAt).toLocaleDateString()}
+                            Applied on: {new Date(app.appliedAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 items-end">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ${
                               app.status === "applied"
@@ -566,37 +224,46 @@ export default function RecruiterDashboard() {
                                 : "bg-red-500 bg-opacity-20 text-red-300"
                             }`}
                           >
-                            {app.status}
+                            {typeof app.status === "string"
+                              ? app.status.charAt(0).toUpperCase() + app.status.slice(1)
+                              : "Applied"}
                           </span>
-                          <button
-                            onClick={() =>
-                              navigate(`/candidate/${app.candidate}`)
-                            }
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1 px-3 rounded transition text-sm whitespace-nowrap"
-                          >
-                            View Profile
-                          </button>
+                          <span className="text-xs text-gray-300">
+                            Match: {matchScores[app._id]?.score ?? "--"}
+                          </span>
+                          <div className="flex gap-2">
+                            {candidateId && (
+                              <button
+                                onClick={() => navigate(`/candidate/${candidateId}`)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1 px-3 rounded transition text-sm whitespace-nowrap"
+                              >
+                                View Profile
+                              </button>
+                            )}
+                            {jobId && (
+                              <button
+                                onClick={() => navigate(`/recruiter-dashboard/job/${jobId}/applications`)}
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 rounded transition text-sm whitespace-nowrap"
+                              >
+                                Manage Status
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       <div className="grid md:grid-cols-2 gap-4 mb-4 text-sm text-gray-300">
                         <div>
-                          <span className="text-gray-500">Email:</span>{" "}
-                          {candidate.email}
+                          <span className="text-gray-500">Email:</span> {candidate.email}
                         </div>
                         <div>
-                          <span className="text-gray-500">Phone:</span>{" "}
-                          {candidate.phone || "N/A"}
+                          <span className="text-gray-500">Phone:</span> {candidate.phone || "N/A"}
                         </div>
                         <div>
-                          <span className="text-gray-500">Experience:</span>{" "}
-                          {candidate.experience || "N/A"}
+                          <span className="text-gray-500">Experience:</span> {candidate.experience || "N/A"}
                         </div>
                         <div>
-                          <span className="text-gray-500">
-                            Current Company:
-                          </span>{" "}
-                          {candidate.currentCompany || "N/A"}
+                          <span className="text-gray-500">Current Company:</span> {candidate.currentCompany || "N/A"}
                         </div>
                       </div>
 
@@ -605,10 +272,7 @@ export default function RecruiterDashboard() {
                           <p className="text-sm text-gray-500 mb-2">Skills:</p>
                           <div className="flex flex-wrap gap-2">
                             {candidate.skills.slice(0, 5).map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs"
-                              >
+                              <span key={idx} className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-xs">
                                 {skill}
                               </span>
                             ))}
@@ -620,51 +284,6 @@ export default function RecruiterDashboard() {
                           </div>
                         </div>
                       )}
-
-                      <div className="flex gap-2 flex-wrap pt-4 border-t border-gray-700">
-                        <button
-                          onClick={() =>
-                            handleUpdateApplicationStatus(
-                              app._id,
-                              "shortlisted"
-                            )
-                          }
-                          disabled={app.status !== "applied"}
-                          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
-                        >
-                          ✓ Shortlist
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateApplicationStatus(
-                              app._id,
-                              "interviewed"
-                            )
-                          }
-                          disabled={app.status !== "shortlisted"}
-                          className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
-                        >
-                          📞 Interview
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateApplicationStatus(app._id, "accepted")
-                          }
-                          disabled={app.status !== "interviewed"}
-                          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
-                        >
-                          ✓ Accept
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateApplicationStatus(app._id, "rejected")
-                          }
-                          disabled={app.status === "accepted"}
-                          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
-                        >
-                          ✕ Reject
-                        </button>
-                      </div>
                     </div>
                   );
                 })}
@@ -695,7 +314,7 @@ export default function RecruiterDashboard() {
                 You haven't posted any jobs yet.
               </p>
               <button
-                onClick={() => setShowCreateForm(true)}
+                onClick={() => navigate("/recruiter-dashboard/post-job")}
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition"
               >
                 Post Your First Job
@@ -734,17 +353,56 @@ export default function RecruiterDashboard() {
                           View
                         </button>
                         <button
-                          onClick={() => handleEdit(job._id)}
+                          onClick={() => navigate(`/recruiter-dashboard/post-job/${job._id}`)}
                           className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
                         >
                           Edit
                         </button>
-                        {job.status === "open" && (
+                        <button
+                          onClick={() => navigate(`/recruiter-dashboard/job/${job._id}/applications`)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                        >
+                          Applications
+                        </button>
+                        {job.status === "open" ? (
                           <button
-                            onClick={() => handleMarkFilled(job._id)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                            onClick={async () => {
+                              if (!window.confirm("Mark this job as filled?")) return;
+                              try {
+                                await jobsAPI.markFilled(job._id);
+                                fetchJobs();
+                              } catch (e) {
+                                console.error("Mark filled failed", e);
+                                alert(
+                                  `Failed to mark filled: ${
+                                    e?.response?.data?.message || e?.message || "Unknown error"
+                                  }`
+                                );
+                              }
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
                           >
                             Mark Filled
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              if (!window.confirm("Reopen this job?")) return;
+                              try {
+                                await jobsAPI.markOpen(job._id);
+                                fetchJobs();
+                              } catch (e) {
+                                console.error("Reopen job failed", e);
+                                alert(
+                                  `Failed to reopen job: ${
+                                    e?.response?.data?.message || e?.message || "Unknown error"
+                                  }`
+                                );
+                              }
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded transition text-sm"
+                          >
+                            Mark Open
                           </button>
                         )}
                         <button
@@ -763,6 +421,13 @@ export default function RecruiterDashboard() {
                         📅 {new Date(job.createdAt).toLocaleDateString()}
                       </div>
                       <div>📊 {job.jobType}</div>
+                      <div className="md:col-span-4">
+                        Status: {job.status === "open" ? (
+                          <span className="text-green-400 font-semibold">Open</span>
+                        ) : (
+                          <span className="text-red-400 font-semibold">Filled</span>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-gray-300 line-clamp-2 mb-2">

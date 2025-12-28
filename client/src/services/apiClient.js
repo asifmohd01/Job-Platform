@@ -1,28 +1,27 @@
 import axios from "axios";
 
-// Use relative API path so Vite can proxy in development and avoid CORS
-const API_URL = "/api";
+// Configurable API base; set VITE_API_URL (e.g., http://localhost:5001/api). Defaults to "/api" for Vite proxy.
+const API_URL = import.meta.env?.VITE_API_URL || "/api";
 
+// Authenticated client
 const apiClient = axios.create({
   baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
-// Add token to requests
+// Attach token automatically
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    if (!config.headers) config.headers = {};
+    config.headers = config.headers || {};
     config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
 
-// Handle errors
+// Redirect to login on 401
 apiClient.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
@@ -32,11 +31,17 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Public client for auth (no token interceptor)
+const publicClient = axios.create({
+  baseURL: API_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
 export const authAPI = {
   register: (name, email, password, role) =>
-    apiClient.post("/auth/register", { name, email, password, role }),
+    publicClient.post("/auth/register", { name, email, password, role }),
   login: (email, password) =>
-    apiClient.post("/auth/login", { email, password }),
+    publicClient.post("/auth/login", { email, password }),
   me: () => apiClient.get("/auth/me"),
 };
 
@@ -47,6 +52,12 @@ export const jobsAPI = {
   updateJob: (id, data) => apiClient.put(`/jobs/${id}`, data),
   deleteJob: (id) => apiClient.delete(`/jobs/${id}`),
   getMyJobs: () => apiClient.get("/jobs/recruiter/my-jobs"),
+  markFilled: (id) => apiClient.put(`/jobs/${id}`, { status: "filled" }),
+  markOpen: (id) => apiClient.put(`/jobs/${id}`, { status: "open" }),
+  // Candidate saved jobs
+  getSavedJobs: () => apiClient.get("/jobs/me/saved"),
+  saveJob: (id) => apiClient.post(`/jobs/${id}/save`),
+  unsaveJob: (id) => apiClient.delete(`/jobs/${id}/save`),
 };
 
 export const applicationsAPI = {
@@ -71,26 +82,12 @@ export const recruiterAPI = {
   getRecruiterDashboard: () => apiClient.get("/recruiter/dashboard"),
 };
 
-export const adminAPI = {
-  getUsers: () => apiClient.get("/admin/users"),
-  blockUser: (id) => apiClient.put(`/admin/users/${id}/block`),
-  deleteUser: (id) => apiClient.delete(`/admin/users/${id}`),
-  getAllJobs: () => apiClient.get("/admin/jobs"),
-};
-
 export const candidateProfileAPI = {
-  // Get candidate's own profile
   getMyProfile: () => apiClient.get("/candidate-profile/my-profile"),
-  
-  // Get any candidate's profile (read-only for recruiters)
   getCandidateProfile: (candidateId) =>
     apiClient.get(`/candidate-profile/${candidateId}`),
-  
-  // Profile summary
   updateProfileSummary: (summary) =>
     apiClient.patch("/candidate-profile/update/summary", { summary }),
-  
-  // Resume operations
   uploadResume: (file) => {
     const formData = new FormData();
     formData.append("resume", file);
@@ -99,63 +96,43 @@ export const candidateProfileAPI = {
     });
   },
   deleteResume: () => apiClient.delete("/candidate-profile/resume"),
-  
-  // Work experience
   addWorkExperience: (data) =>
     apiClient.post("/candidate-profile/work-experience", data),
   updateWorkExperience: (experienceId, data) =>
     apiClient.patch(`/candidate-profile/work-experience/${experienceId}`, data),
   deleteWorkExperience: (experienceId) =>
     apiClient.delete(`/candidate-profile/work-experience/${experienceId}`),
-  
-  // Skills
   addSkill: (skill) => apiClient.post("/candidate-profile/skills", { skill }),
   removeSkill: (skill) =>
     apiClient.delete("/candidate-profile/skills", { data: { skill } }),
-  
-  // Education
   addEducation: (data) =>
     apiClient.post("/candidate-profile/education", data),
   updateEducation: (educationId, data) =>
     apiClient.patch(`/candidate-profile/education/${educationId}`, data),
   deleteEducation: (educationId) =>
     apiClient.delete(`/candidate-profile/education/${educationId}`),
-  
-  // Job preferences
   updateJobPreferences: (data) =>
     apiClient.patch("/candidate-profile/job-preferences", data),
-  
-  // Personal details
   updatePersonalDetails: (data) =>
     apiClient.patch("/candidate-profile/personal-details", data),
-  
-  // Certifications
   addCertification: (data) =>
     apiClient.post("/candidate-profile/certifications", data),
   updateCertification: (certificationId, data) =>
     apiClient.patch(`/candidate-profile/certifications/${certificationId}`, data),
   deleteCertification: (certificationId) =>
     apiClient.delete(`/candidate-profile/certifications/${certificationId}`),
-  
-  // Projects
   addProject: (data) => apiClient.post("/candidate-profile/projects", data),
   updateProject: (projectId, data) =>
     apiClient.patch(`/candidate-profile/projects/${projectId}`, data),
   deleteProject: (projectId) =>
     apiClient.delete(`/candidate-profile/projects/${projectId}`),
-  
-  // Awards
   addAward: (data) => apiClient.post("/candidate-profile/awards", data),
   updateAward: (awardId, data) =>
     apiClient.patch(`/candidate-profile/awards/${awardId}`, data),
   deleteAward: (awardId) =>
     apiClient.delete(`/candidate-profile/awards/${awardId}`),
-  
-  // Social links
   updateSocialLinks: (data) =>
     apiClient.patch("/candidate-profile/social-links", data),
-  
-  // Languages
   addLanguage: (data) => apiClient.post("/candidate-profile/languages", data),
   updateLanguage: (languageId, data) =>
     apiClient.patch(`/candidate-profile/languages/${languageId}`, data),

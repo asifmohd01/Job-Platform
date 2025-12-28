@@ -1,5 +1,7 @@
 const User = require("../models/User");
+const mongoose = require("mongoose");
 const { uploadBuffer } = require("../services/cloudinaryUpload");
+const { cloudinary } = require("../config/cloudinary");
 
 // Get candidate's own profile
 const getMyProfile = async (req, res) => {
@@ -20,7 +22,13 @@ const getMyProfile = async (req, res) => {
 // Get another candidate's profile (read-only for recruiters)
 const getCandidateProfile = async (req, res) => {
   try {
-    const { candidateId } = req.params;
+    let { candidateId } = req.params;
+
+    // Validate ObjectId to avoid CastError
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: "Invalid candidateId" });
+    }
+
     const candidate = await User.findById(candidateId).select("-password");
 
     if (!candidate || candidate.role !== "candidate") {
@@ -90,6 +98,8 @@ const uploadResume = async (req, res) => {
         "candidateProfile.resume": {
           url: result.secure_url,
           public_id: result.public_id,
+          resource_type: result.resource_type,
+          format: result.format,
           fileName: req.file.originalname,
         },
       },
@@ -752,26 +762,124 @@ const canAccessResume = async (req, candidateId) => {
     return true;
   }
 
-  // Recruiter accessing applied candidate's resume
+  // Recruiter may access resumes of candidates who applied to their jobs
   if (req.user?.role === "recruiter") {
     const Application = require("../models/Application");
+    const Job = require("../models/Job");
+
+    // Find jobs posted by this recruiter
+    const jobs = await Job.find({ recruiter: requestingUserId }).select("_id");
+    const jobIds = jobs.map((j) => j._id);
+    if (jobIds.length === 0) return false;
+
+    // Check if the candidate has any application to these jobs
     const hasApplication = await Application.findOne({
       candidate: candidateId,
-      recruiter: requestingUserId,
-    });
+      job: { $in: jobIds },
+    }).lean();
     return !!hasApplication;
   }
 
   return false;
 };
 
+// Helper to resolve a usable resume URL from stored data
+const resolveResumeUrl = (resume) => {
+  if (!resume) return null;
+  const url = resume.url;
+  const publicId = resume.public_id;
+  const resourceType = resume.resource_type;
+
+  if (url) {
+    try {
+      // Validate absolute URL
+      const parsed = new URL(url);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        return url;
+      }
+    } catch (_) {
+      // fall through to Cloudinary URL generation
+    }
+  }
+
+  // Fallback: generate secure URL via Cloudinary SDK using public_id
+  if (publicId) {
+    try {
+      // Prefer stored resource_type when available
+      const rt = resourceType || "raw";
+      let generated = cloudinary.url(publicId, { resource_type: rt, secure: true });
+      // If resource_type guess fails, try alternative types
+      if (!generated || !(generated.startsWith("http://") || generated.startsWith("https://"))) {
+        generated = cloudinary.url(publicId, { resource_type: "raw", secure: true });
+      }
+      if (!generated || !(generated.startsWith("http://") || generated.startsWith("https://"))) {
+        generated = cloudinary.url(publicId, { resource_type: "image", secure: true });
+      }
+      // Basic sanity check
+      if (generated && (generated.startsWith("http://") || generated.startsWith("https://"))) {
+        return generated;
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  return null;
+};
+
+// Stream a remote URL to the client, following redirects if necessary
+const streamRemoteToClient = (url, res, extraHeaders = {}, redirectCount = 0) => {
+  if (redirectCount > 5) {
+    return res.status(500).json({ message: "Too many redirects while fetching resume" });
+  }
+
+  let protocol;
+  try {
+    const parsedUrl = new URL(url);
+    protocol = parsedUrl.protocol === "https:" ? require("https") : require("http");
+  } catch (err) {
+    console.error("Error parsing resume URL:", err);
+    return res.status(400).json({ message: "Invalid resume URL", error: err.message });
+  }
+
+  protocol
+    .get(url, (cloudRes) => {
+      const status = cloudRes.statusCode || 200;
+      if (
+        [301, 302, 303, 307, 308].includes(status) &&
+        cloudRes.headers.location
+      ) {
+        const nextUrl = new URL(cloudRes.headers.location, url).toString();
+        return streamRemoteToClient(nextUrl, res, extraHeaders, redirectCount + 1);
+      }
+
+      if (cloudRes.headers["content-type"]) {
+        res.setHeader("Content-Type", cloudRes.headers["content-type"]);
+      }
+      for (const [key, value] of Object.entries(extraHeaders)) {
+        res.setHeader(key, value);
+      }
+      cloudRes.pipe(res);
+    })
+    .on("error", (err) => {
+      console.error("Error streaming resume:", err);
+      return res
+        .status(500)
+        .json({ message: "Error streaming resume", error: err.message });
+    });
+};
+
 // View resume (opens in browser)
 const viewResume = async (req, res) => {
   try {
-    const { candidateId } = req.params;
+    let { candidateId } = req.params;
 
     if (!candidateId) {
       return res.status(400).json({ message: "Candidate ID required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: "Invalid candidateId" });
     }
 
     // Check if user has permission to view this resume
@@ -787,35 +895,26 @@ const viewResume = async (req, res) => {
       return res.status(404).json({ message: "Resume not found" });
     }
 
-    const resumeUrl = user.candidateProfile.resume.url;
-    const fileName = user.candidateProfile.resume.fileName;
+    const resumeUrl = resolveResumeUrl(user.candidateProfile.resume);
+    const fileName = user.candidateProfile.resume.fileName || "resume";
+
+    if (!resumeUrl) {
+      return res.status(400).json({ message: "Invalid resume URL" });
+    }
 
     // Stream the remote file through the backend so it remains inside the app
-    const parsedUrl = new URL(resumeUrl);
-    const protocol =
-      parsedUrl.protocol === "https:" ? require("https") : require("http");
+    let protocol;
+    try {
+      const parsedUrl = new URL(resumeUrl);
+      protocol = parsedUrl.protocol === "https:" ? require("https") : require("http");
+    } catch (err) {
+      console.error("Error parsing resume URL:", err);
+      return res.status(400).json({ message: "Invalid resume URL", error: err.message });
+    }
 
     // Set inline disposition for in-app display
-    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
-
-    protocol
-      .get(resumeUrl, (cloudRes) => {
-        // Forward content-type if available
-        if (cloudRes.headers["content-type"]) {
-          res.setHeader("Content-Type", cloudRes.headers["content-type"]);
-        }
-        // Pipe remote response directly to client
-        cloudRes.pipe(res);
-        cloudRes.on("end", () => {
-          // end handled by pipe
-        });
-      })
-      .on("error", (err) => {
-        console.error("Error streaming resume from remote:", err);
-        return res
-          .status(500)
-          .json({ message: "Error streaming resume", error: err.message });
-      });
+    const headers = { "Content-Disposition": `inline; filename="${fileName}"` };
+    streamRemoteToClient(resumeUrl, res, headers);
   } catch (err) {
     console.error("Error viewing resume:", err);
     res
@@ -827,10 +926,14 @@ const viewResume = async (req, res) => {
 // Download resume (force download)
 const downloadResume = async (req, res) => {
   try {
-    const { candidateId } = req.params;
+    let { candidateId } = req.params;
 
     if (!candidateId) {
       return res.status(400).json({ message: "Candidate ID required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: "Invalid candidateId" });
     }
 
     // Check if user has permission to download this resume
@@ -846,30 +949,26 @@ const downloadResume = async (req, res) => {
       return res.status(404).json({ message: "Resume not found" });
     }
 
-    const resumeUrl = user.candidateProfile.resume.url;
-    const fileName = user.candidateProfile.resume.fileName;
+    const resumeUrl = resolveResumeUrl(user.candidateProfile.resume);
+    const fileName = user.candidateProfile.resume.fileName || "resume";
+
+    if (!resumeUrl) {
+      return res.status(400).json({ message: "Invalid resume URL" });
+    }
 
     // Stream the remote file through the backend and force download dialog
-    const parsedUrl = new URL(resumeUrl);
-    const protocol =
-      parsedUrl.protocol === "https:" ? require("https") : require("http");
+    let protocol;
+    try {
+      const parsedUrl = new URL(resumeUrl);
+      protocol = parsedUrl.protocol === "https:" ? require("https") : require("http");
+    } catch (err) {
+      console.error("Error parsing resume URL:", err);
+      return res.status(400).json({ message: "Invalid resume URL", error: err.message });
+    }
 
     // Set attachment disposition for download
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-
-    protocol
-      .get(resumeUrl, (cloudRes) => {
-        if (cloudRes.headers["content-type"]) {
-          res.setHeader("Content-Type", cloudRes.headers["content-type"]);
-        }
-        cloudRes.pipe(res);
-      })
-      .on("error", (err) => {
-        console.error("Error streaming resume for download:", err);
-        return res
-          .status(500)
-          .json({ message: "Error downloading resume", error: err.message });
-      });
+    const headers = { "Content-Disposition": `attachment; filename="${fileName}"` };
+    streamRemoteToClient(resumeUrl, res, headers);
   } catch (err) {
     console.error("Error downloading resume:", err);
     res

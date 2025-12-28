@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["candidate", "recruiter", "admin"],
+      enum: ["candidate", "recruiter"],
       default: "candidate",
     },
     profilePhoto: {
@@ -128,6 +128,8 @@ const userSchema = new mongoose.Schema(
       bio: String,
     },
     isBlocked: { type: Boolean, default: false },
+    // Saved jobs (candidate bookmarks)
+    savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
   },
   { timestamps: true }
 );

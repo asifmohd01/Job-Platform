@@ -7,6 +7,10 @@ const protect = async (req, res, next) => {
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
   }
+  // Fallback to token from query for iframe-based viewing
+  if (!token && typeof req.query?.token === "string") {
+    token = req.query.token;
+  }
   if (!token)
     return res.status(401).json({ message: "Not authorized, token missing" });
   try {

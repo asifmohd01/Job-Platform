@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { jobsAPI } from "../services/apiClient";
+import { useAuth } from "../context/AuthContext";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { user } = useAuth();
+  const [savedIds, setSavedIds] = useState(new Set());
   const [filters, setFilters] = useState({
     location: "",
     jobType: "",
@@ -16,7 +19,36 @@ export default function JobsPage() {
 
   useEffect(() => {
     fetchJobs();
+    // Load saved jobs for candidates
+    if (user?.role === "candidate") {
+      jobsAPI
+        .getSavedJobs()
+        .then(({ data }) => {
+          const ids = new Set((data.jobs || []).map((j) => j._id));
+          setSavedIds(ids);
+        })
+        .catch((e) => console.error("Failed to load saved jobs", e));
+    }
   }, [filters]);
+  const toggleSave = async (jobId) => {
+    if (!user || user.role !== "candidate") return;
+    try {
+      const isSaved = savedIds.has(jobId);
+      if (isSaved) {
+        await jobsAPI.unsaveJob(jobId);
+        const next = new Set(savedIds);
+        next.delete(jobId);
+        setSavedIds(next);
+      } else {
+        await jobsAPI.saveJob(jobId);
+        const next = new Set(savedIds);
+        next.add(jobId);
+        setSavedIds(next);
+      }
+    } catch (e) {
+      alert(e?.response?.data?.message || "Failed to update saved job");
+    }
+  };
 
   const fetchJobs = async () => {
     try {
@@ -186,9 +218,29 @@ export default function JobsPage() {
                           {job.company?.name || "Company"}
                         </p>
                       </div>
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        {job.jobType}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {job.jobType}
+                        </span>
+                        {user?.role === "candidate" && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleSave(job._id);
+                            }}
+                            className={`px-3 py-1 rounded text-sm border ${
+                              savedIds.has(job._id)
+                                ? "bg-yellow-600 border-yellow-500 text-white"
+                                : "bg-gray-700 border-gray-600 text-gray-200"
+                            }`}
+                            aria-label={savedIds.has(job._id) ? "Unsave job" : "Save job"}
+                          >
+                            {savedIds.has(job._id) ? "Saved" : "Save"}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-gray-300 mb-4 line-clamp-2">

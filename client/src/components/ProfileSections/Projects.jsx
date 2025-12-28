@@ -109,9 +109,9 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Projects</h2>
+        <h2 className="text-xl font-semibold text-white">Projects</h2>
         {isOwnProfile && !isAdding && !editingId && (
           <button
             onClick={() => setIsAdding(true)}
@@ -122,13 +122,13 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {/* Add/Edit Form */}
       {isOwnProfile && (isAdding || editingId) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <div className="mb-6 p-4 bg-gray-900 border border-gray-700 rounded-lg space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Project Name *
             </label>
             <input
@@ -138,11 +138,11 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Description *
             </label>
             <textarea
@@ -151,12 +151,12 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               rows="3"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
               Tech Stack
             </label>
             <div className="flex gap-2 mb-2">
@@ -166,7 +166,7 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
                 value={newTech}
                 onChange={(e) => setNewTech(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addTech()}
-                className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="flex-1 px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               />
               <button
                 onClick={addTech}
@@ -179,12 +179,12 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
               {formData.techStack.map((tech) => (
                 <div
                   key={tech}
-                  className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full"
+                  className="flex items-center gap-2 px-3 py-1 bg-gray-700 text-gray-200 rounded-full"
                 >
                   <span className="text-sm">{tech}</span>
                   <button
                     onClick={() => removeTech(tech)}
-                    className="ml-1 font-bold"
+                    className="ml-1 font-bold text-gray-300 hover:text-white"
                   >
                     ×
                   </button>
@@ -193,7 +193,7 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               GitHub Link
             </label>
             <input
@@ -203,11 +203,11 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, githubLink: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Live Demo Link
             </label>
             <input
@@ -217,20 +217,20 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, liveLink: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={editingId ? handleEdit : handleAdd}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -244,10 +244,10 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
           {projects.map((project) => (
             <div
               key={project._id}
-              className="p-4 border border-gray-200 rounded-lg hover:shadow-sm"
+              className="p-4 border border-gray-700 rounded-lg hover:bg-gray-700"
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                <h3 className="font-semibold text-white">{project.name}</h3>
                 {isOwnProfile && (
                   <div className="flex gap-2">
                     <button
@@ -255,30 +255,30 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
                         setFormData(project);
                         setEditingId(project._id);
                       }}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(project._id)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Delete
                     </button>
                   </div>
                 )}
               </div>
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-300 mb-3">
                 {project.description}
               </p>
               {project.techStack && project.techStack.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs text-gray-600 mb-2">Tech Stack:</p>
+                  <p className="text-xs text-gray-400 mb-2">Tech Stack:</p>
                   <div className="flex flex-wrap gap-2">
                     {project.techStack.map((tech) => (
                       <span
                         key={tech}
-                        className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
+                        className="text-xs px-2 py-1 bg-gray-700 text-gray-200 rounded"
                       >
                         {tech}
                       </span>
@@ -293,7 +293,7 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
                       href={project.githubLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      className="text-xs text-blue-400 hover:text-blue-300 underline"
                     >
                       GitHub
                     </a>
@@ -303,7 +303,7 @@ const Projects = ({ profile, setProfile, isOwnProfile }) => {
                       href={project.liveLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      className="text-xs text-blue-400 hover:text-blue-300 underline"
                     >
                       Live Demo
                     </a>

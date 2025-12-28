@@ -12,14 +12,14 @@ const { permit } = require("../middlewares/role");
 router.put(
   "/company-profile",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   updateCompanyProfile
 );
 
 router.get(
   "/company-profile",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   getCompanyProfile
 );
 
@@ -27,7 +27,7 @@ router.get(
 router.get(
   "/dashboard",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   getRecruiterDashboard
 );
 

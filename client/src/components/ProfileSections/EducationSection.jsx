@@ -90,9 +90,9 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Education</h2>
+        <h2 className="text-xl font-semibold text-white">Education</h2>
         {isOwnProfile && !isAdding && !editingId && (
           <button
             onClick={() => setIsAdding(true)}
@@ -103,13 +103,13 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {/* Add/Edit Form */}
       {isOwnProfile && (isAdding || editingId) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <div className="mb-6 p-4 bg-gray-700 rounded-lg space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Degree *
             </label>
             <input
@@ -119,11 +119,11 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, degree: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Institute/University *
             </label>
             <input
@@ -133,11 +133,11 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, institute: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Year of Completion
             </label>
             <select
@@ -145,7 +145,7 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, yearOfCompletion: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             >
               <option value="">Select Year of Completion</option>
               {years.map((year) => (
@@ -156,7 +156,7 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               CGPA / Percentage
             </label>
             <input
@@ -166,20 +166,20 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, cgpa: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={editingId ? handleEdit : handleAdd}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -193,18 +193,18 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
           {educations.map((edu) => (
             <div
               key={edu._id}
-              className="p-4 border border-gray-200 rounded-lg hover:shadow-sm"
+              className="p-4 border border-gray-700 rounded-lg hover:bg-gray-700"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="grow">
-                  <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
-                  <p className="text-sm text-gray-600">{edu.institute}</p>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-semibold text-white">{edu.degree}</h3>
+                  <p className="text-sm text-gray-300">{edu.institute}</p>
+                  <p className="text-sm text-gray-400">
                     Year: {edu.yearOfCompletion}
                   </p>
                   {edu.cgpa && (
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">CGPA:</span> {edu.cgpa}
+                    <p className="text-sm text-gray-300">
+                      <span className="font-medium text-gray-200">CGPA:</span> {edu.cgpa}
                     </p>
                   )}
                 </div>
@@ -215,20 +215,20 @@ const EducationSection = ({ profile, setProfile, isOwnProfile }) => {
                         setFormData(edu);
                         setEditingId(edu._id);
                       }}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(edu._id)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Delete
                     </button>
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500">{edu.yearOfCompletion}</p>
+              <p className="text-xs text-gray-400">{edu.yearOfCompletion}</p>
             </div>
           ))}
         </div>

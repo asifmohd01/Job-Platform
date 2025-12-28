@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { candidateProfileAPI } from "../services/apiClient";
 import ProfileSummary from "../components/ProfileSections/ProfileSummary";
 import ResumeSection from "../components/ProfileSections/ResumeSection";
@@ -16,6 +17,7 @@ import Languages from "../components/ProfileSections/Languages";
 
 const CandidateProfile = () => {
   const { candidateId } = useParams();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,31 +54,31 @@ const CandidateProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <p className="text-red-600 text-lg">{error}</p>
+          <p className="text-red-300 text-lg">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-white">
             {isOwnProfile ? "My Profile" : "Candidate Profile"}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-400 mt-2">
             {isOwnProfile
               ? "Build your professional profile to showcase your skills and experience"
               : "View candidate's profile"}
@@ -100,7 +102,7 @@ const CandidateProfile = () => {
               profile={profile}
               setProfile={setProfile}
               isOwnProfile={isOwnProfile}
-              candidateId={candidateId}
+              candidateId={isOwnProfile ? user?._id : candidateId}
             />
           )}
 
@@ -205,7 +207,7 @@ const CandidateProfile = () => {
         {/* Empty State for Own Profile */}
         {isOwnProfile && Object.keys(profile).length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               Start building your profile by adding sections above
             </p>
           </div>

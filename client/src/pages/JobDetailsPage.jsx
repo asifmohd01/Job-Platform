@@ -13,8 +13,9 @@ export default function JobDetailsPage() {
   const [applying, setApplying] = useState(false);
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    email: user?.email || "",
     phone: "",
     coverLetter: "",
     resume: null,
@@ -39,6 +40,14 @@ export default function JobDetailsPage() {
           const myApps = appData.applications || [];
           const hasApp = myApps.some(app => app.job?._id === id);
           setHasApplied(hasApp);
+          // Check saved state
+          try {
+            const { data: savedData } = await jobsAPI.getSavedJobs();
+            const ids = (savedData.jobs || []).map((j) => j._id);
+            setIsSaved(ids.includes(id));
+          } catch (se) {
+            console.error("Failed to load saved jobs", se);
+          }
         } catch (e) {
           console.error("Failed to check applications", e);
         }
@@ -48,6 +57,21 @@ export default function JobDetailsPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleSave = async () => {
+    if (!user || user.role !== "candidate") return;
+    try {
+      if (isSaved) {
+        await jobsAPI.unsaveJob(id);
+        setIsSaved(false);
+      } else {
+        await jobsAPI.saveJob(id);
+        setIsSaved(true);
+      }
+    } catch (e) {
+      alert(e?.response?.data?.message || "Failed to update saved job");
     }
   };
 
@@ -260,6 +284,20 @@ export default function JobDetailsPage() {
 
                 <hr className="border-gray-700 my-6" />
 
+                {/* Save & Apply */}
+                {user && user.role === "candidate" && (
+                  <button
+                    onClick={toggleSave}
+                    className={`w-full mb-3 font-bold py-2 px-4 rounded-lg transition ${
+                      isSaved
+                        ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                        : "bg-gray-700 hover:bg-gray-600 text-white"
+                    }`}
+                  >
+                    {isSaved ? "Saved" : "Save Job"}
+                  </button>
+                )}
+
                 {/* Apply Button */}
                 {job.status === "open" && (
                   <>
@@ -357,7 +395,8 @@ export default function JobDetailsPage() {
                     name="resume"
                     onChange={handleInputChange}
                     accept=".pdf,.doc,.docx"
-                    required
+                    // Optional: allow application without resume if backend/cloud storage isn't configured
+                    required={false}
                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white file:text-blue-400 focus:outline-none focus:border-blue-500"
                   />
                 </div>

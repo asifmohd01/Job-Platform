@@ -96,7 +96,7 @@ const getMyJobApplications = async (req, res) => {
     if (!job) return res.status(404).json({ message: "Job not found" });
 
     // Check authorization
-    if (!job.recruiter.equals(req.user._id) && req.user.role !== "admin") {
+    if (!job.recruiter.equals(req.user._id)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -148,7 +148,7 @@ const updateApplicationStatus = async (req, res) => {
       return res.status(404).json({ message: "Application not found" });
 
     const job = await Job.findById(application.job);
-    if (!job.recruiter.equals(req.user._id) && req.user.role !== "admin") {
+    if (!job.recruiter.equals(req.user._id)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 

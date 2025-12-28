@@ -1,16 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import {
-  FiHome,
-  FiSearch,
-  FiUser,
-  FiUsers,
-  FiBriefcase,
-  FiPlusSquare,
-  FiFileText,
-  FiMenu,
-} from "react-icons/fi";
+import { FiHome, FiSearch, FiUser, FiBriefcase, FiPlusSquare, FiFileText, FiMenu } from "react-icons/fi";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -35,15 +26,9 @@ export default function Sidebar() {
     { to: "/recruiter-dashboard/my-jobs", label: "My Jobs", icon: FiBriefcase },
   ];
 
-  const admin = [
-    { to: "/admin-dashboard", label: "Dashboard", icon: FiHome },
-    { to: "/admin-dashboard/users", label: "Users", icon: FiUsers },
-    { to: "/admin-dashboard/jobs", label: "Jobs", icon: FiBriefcase },
-  ];
-
   const items = [
     ...common,
-    ...(user?.role === "recruiter" ? recruiter : user?.role === "admin" ? admin : candidate),
+    ...(user?.role === "recruiter" ? recruiter : candidate),
   ];
 
   const isActive = (to) => {

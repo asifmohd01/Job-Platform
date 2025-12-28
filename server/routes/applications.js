@@ -28,31 +28,29 @@ router.get(
 router.get(
   "/:jobId",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   getApplicationsForJob
 );
 // Get applications for a specific job
 router.get(
   "/job/:jobId/applications",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   getMyJobApplications
 );
 // Get all applications for recruiter's jobs
 router.get(
   "/recruiter/all-applications",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   getRecruiterApplications
 );
 // Update application status
 router.put(
   "/:applicationId/status",
   protect,
-  permit("recruiter", "admin"),
+  permit("recruiter"),
   updateApplicationStatus
 );
-
-module.exports = router;
 
 module.exports = router;

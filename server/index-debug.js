@@ -26,12 +26,11 @@ try {
   const authRoutes = require("./routes/auth");
   const jobRoutes = require("./routes/jobs");
   const applicationRoutes = require("./routes/applications");
-  const adminRoutes = require("./routes/admin");
 
   app.use("/api/auth", authRoutes);
   app.use("/api/jobs", jobRoutes);
   app.use("/api/applications", applicationRoutes);
-  app.use("/api/admin", adminRoutes);
+  // admin routes removed
 
   console.log("✅ All routes configured");
 } catch (err) {

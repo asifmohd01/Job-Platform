@@ -103,15 +103,15 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Job Preferences</h2>
+        <h2 className="text-xl font-semibold text-white">Job Preferences</h2>
         {isOwnProfile && (
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded text-sm font-semibold transition ${
               isEditing
-                ? "bg-gray-200 text-gray-800"
+                ? "bg-gray-700 text-white"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
@@ -120,13 +120,13 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {isEditing ? (
         <div className="space-y-6">
           {/* Job Titles */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">
+            <h3 className="font-medium text-white mb-3">
               Preferred Job Titles
             </h3>
             <div className="flex gap-2 mb-3">
@@ -136,7 +136,7 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 list="jobTitleList"
-                className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="flex-1 px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
                 onKeyPress={(e) => e.key === "Enter" && addJobTitle()}
               />
               <datalist id="jobTitleList">
@@ -155,12 +155,12 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
               {formData.preferredJobTitles.map((title) => (
                 <div
                   key={title}
-                  className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full"
+                  className="flex items-center gap-2 px-3 py-1 bg-gray-700 text-gray-200 rounded-full"
                 >
                   <span className="text-sm">{title}</span>
                   <button
                     onClick={() => removeJobTitle(title)}
-                    className="ml-1 font-bold hover:text-blue-600"
+                    className="ml-1 font-bold text-gray-300 hover:text-white"
                   >
                     ×
                   </button>
@@ -171,7 +171,7 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
 
           {/* Locations */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">
+            <h3 className="font-medium text-white mb-3">
               Preferred Locations
             </h3>
             <div className="flex gap-2 mb-3">
@@ -181,7 +181,7 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
                 value={newLocation}
                 onChange={(e) => setNewLocation(e.target.value)}
                 list="locationList"
-                className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="flex-1 px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
                 onKeyPress={(e) => e.key === "Enter" && addLocation()}
               />
               <datalist id="locationList">
@@ -200,12 +200,12 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
               {formData.preferredLocations.map((location) => (
                 <div
                   key={location}
-                  className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full"
+                  className="flex items-center gap-2 px-3 py-1 bg-gray-700 text-gray-200 rounded-full"
                 >
                   <span className="text-sm">{location}</span>
                   <button
                     onClick={() => removeLocation(location)}
-                    className="ml-1 font-bold hover:text-green-600"
+                    className="ml-1 font-bold text-gray-300 hover:text-white"
                   >
                     ×
                   </button>
@@ -218,13 +218,13 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -235,14 +235,14 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
           {/* Display Job Titles */}
           {formData.preferredJobTitles.length > 0 && (
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">
+              <h3 className="font-medium text-white mb-3">
                 Preferred Job Titles
               </h3>
               <div className="flex flex-wrap gap-2">
                 {formData.preferredJobTitles.map((title) => (
                   <span
                     key={title}
-                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-sm"
                   >
                     {title}
                   </span>
@@ -254,14 +254,14 @@ const JobPreferences = ({ profile, setProfile, isOwnProfile }) => {
           {/* Display Locations */}
           {formData.preferredLocations.length > 0 && (
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">
+              <h3 className="font-medium text-white mb-3">
                 Preferred Locations
               </h3>
               <div className="flex flex-wrap gap-2">
                 {formData.preferredLocations.map((location) => (
                   <span
                     key={location}
-                    className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-sm"
                   >
                     {location}
                   </span>

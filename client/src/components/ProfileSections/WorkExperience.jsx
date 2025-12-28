@@ -112,9 +112,9 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Work Experience</h2>
+        <h2 className="text-xl font-semibold text-white">Work Experience</h2>
         {isOwnProfile && !isAdding && !editingId && (
           <button
             onClick={() => setIsAdding(true)}
@@ -125,13 +125,13 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {/* Add/Edit Form */}
       {isOwnProfile && (isAdding || editingId) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <div className="mb-6 p-4 bg-gray-700 rounded-lg space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Company Name *
             </label>
             <input
@@ -141,12 +141,12 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, companyName: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Job Title *
               </label>
               <input
@@ -156,11 +156,11 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, jobTitle: e.target.value })
                 }
-                className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Employment Type
               </label>
               <select
@@ -168,7 +168,7 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, employmentType: e.target.value })
                 }
-                className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               >
                 <option>Full-time</option>
                 <option>Part-time</option>
@@ -178,7 +178,7 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Industry
             </label>
             <input
@@ -188,12 +188,12 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, industry: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Start Date *
               </label>
               <input
@@ -202,12 +202,12 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, startDate: e.target.value })
                 }
-                className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               />
             </div>
             {!formData.currentlyWorking && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   End Date
                 </label>
                 <input
@@ -216,12 +216,12 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                   onChange={(e) =>
                     setFormData({ ...formData, endDate: e.target.value })
                   }
-                  className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+                  className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
                 />
               </div>
             )}
           </div>
-          <label className="flex items-center gap-2 p-2">
+          <label className="flex items-center gap-2 p-2 text-gray-300">
             <input
               type="checkbox"
               checked={formData.currentlyWorking}
@@ -232,10 +232,10 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                 })
               }
             />
-            <span className="text-sm text-gray-700">I currently work here</span>
+            <span className="text-sm">I currently work here</span>
           </label>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Description
             </label>
             <textarea
@@ -244,7 +244,7 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               rows="3"
             />
           </div>
@@ -252,13 +252,13 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
             <button
               onClick={editingId ? handleEdit : handleAdd}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -272,29 +272,29 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
           {experiences.map((exp) => (
             <div
               key={exp._id}
-              className="p-4 border border-gray-200 rounded-lg hover:shadow-sm"
+              className="p-4 border border-gray-700 rounded-lg hover:bg-gray-700"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="grow">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-white">
                     {exp.jobTitle}
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Company:</span>{" "}
+                  <p className="text-sm text-gray-300">
+                    <span className="font-medium text-gray-200">Company:</span>{" "}
                     {exp.companyName}
                   </p>
                   {exp.industry && (
-                    <p className="text-xs text-gray-500">
-                      <span className="font-medium">Industry:</span>{" "}
+                    <p className="text-xs text-gray-400">
+                      <span className="font-medium text-gray-300">Industry:</span>{" "}
                       {exp.industry}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">Type:</span>{" "}
+                  <p className="text-xs text-gray-400">
+                    <span className="font-medium text-gray-300">Type:</span>{" "}
                     {exp.employmentType}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">Duration:</span>{" "}
+                  <p className="text-xs text-gray-400">
+                    <span className="font-medium text-gray-300">Duration:</span>{" "}
                     {calculateDuration(
                       exp.startDate,
                       exp.endDate,
@@ -309,20 +309,20 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                         setFormData(exp);
                         setEditingId(exp._id);
                       }}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(exp._id)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Delete
                     </button>
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mb-2">
+              <p className="text-xs text-gray-400 mb-2">
                 {new Date(exp.startDate).toLocaleDateString()} -{" "}
                 {exp.currentlyWorking
                   ? "Present"
@@ -336,9 +336,9 @@ const WorkExperience = ({ profile, setProfile, isOwnProfile }) => {
                 )
               </p>
               {exp.description && (
-                <p className="text-sm text-gray-700">{exp.description}</p>
+                <p className="text-sm text-gray-300">{exp.description}</p>
               )}
-              <span className="inline-block mt-2 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+              <span className="inline-block mt-2 text-xs bg-gray-700 text-gray-200 px-2 py-1 rounded">
                 {exp.employmentType}
               </span>
             </div>

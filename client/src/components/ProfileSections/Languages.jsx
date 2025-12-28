@@ -93,9 +93,9 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Languages</h2>
+        <h2 className="text-xl font-semibold text-white">Languages</h2>
         {isOwnProfile && !isAdding && !editingId && (
           <button
             onClick={() => setIsAdding(true)}
@@ -106,13 +106,13 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-300 text-sm mb-4">{error}</p>}
 
       {/* Add/Edit Form */}
       {isOwnProfile && (isAdding || editingId) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <div className="mb-6 p-4 bg-gray-900 border border-gray-700 rounded-lg space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Language *
             </label>
             <input
@@ -122,12 +122,12 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, language: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
               autoFocus
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Proficiency Level
             </label>
             <select
@@ -135,7 +135,7 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
               onChange={(e) =>
                 setFormData({ ...formData, proficiencyLevel: e.target.value })
               }
-              className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded text-base"
+              className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded text-base"
             >
               {proficiencyLevels.map((level) => (
                 <option key={level} value={level}>
@@ -148,13 +148,13 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
             <button
               onClick={editingId ? handleEdit : handleAdd}
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -168,12 +168,12 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
           {languages.map((lang) => (
             <div
               key={lang._id}
-              className="p-3 border border-gray-200 rounded-lg flex items-center justify-between"
+              className="p-3 border border-gray-700 rounded-lg flex items-center justify-between"
             >
               <div>
-                <h3 className="font-semibold text-gray-900">{lang.language}</h3>
-                <p className="text-xs text-gray-600">
-                  <span className="font-medium">Proficiency:</span>{" "}
+                <h3 className="font-semibold text-white">{lang.language}</h3>
+                <p className="text-xs text-gray-400">
+                  <span className="font-medium text-white">Proficiency:</span>{" "}
                   {lang.proficiencyLevel}
                 </p>
               </div>
@@ -184,13 +184,13 @@ const Languages = ({ profile, setProfile, isOwnProfile }) => {
                       setFormData(lang);
                       setEditingId(lang._id);
                     }}
-                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(lang._id)}
-                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                   >
                     Delete
                   </button>

@@ -552,21 +552,31 @@ export default function RecruiterDashboard() {
                             {new Date(app.appliedAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ${
-                            app.status === "applied"
-                              ? "bg-yellow-500 bg-opacity-20 text-yellow-300"
-                              : app.status === "shortlisted"
-                              ? "bg-blue-500 bg-opacity-20 text-blue-300"
-                              : app.status === "interviewed"
-                              ? "bg-purple-500 bg-opacity-20 text-purple-300"
-                              : app.status === "accepted"
-                              ? "bg-green-500 bg-opacity-20 text-green-300"
-                              : "bg-red-500 bg-opacity-20 text-red-300"
-                          }`}
-                        >
-                          {app.status}
-                        </span>
+                        <div className="flex flex-col gap-2">
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ${
+                              app.status === "applied"
+                                ? "bg-yellow-500 bg-opacity-20 text-yellow-300"
+                                : app.status === "shortlisted"
+                                ? "bg-blue-500 bg-opacity-20 text-blue-300"
+                                : app.status === "interviewed"
+                                ? "bg-purple-500 bg-opacity-20 text-purple-300"
+                                : app.status === "accepted"
+                                ? "bg-green-500 bg-opacity-20 text-green-300"
+                                : "bg-red-500 bg-opacity-20 text-red-300"
+                            }`}
+                          >
+                            {app.status}
+                          </span>
+                          <button
+                            onClick={() =>
+                              navigate(`/candidate/${app.candidate}`)
+                            }
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1 px-3 rounded transition text-sm whitespace-nowrap"
+                          >
+                            View Profile
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid md:grid-cols-2 gap-4 mb-4 text-sm text-gray-300">

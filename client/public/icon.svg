@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Background -->
+  <rect width="24" height="24" rx="5" fill="#0f172a"></rect>
+
+  <!-- Candidate head -->
+  <circle cx="12" cy="9" r="3" fill="#38bdf8"></circle>
+
+  <!-- Candidate body -->
+  <path d="M6 19c0-3 12-3 12 0" stroke="#38bdf8" stroke-width="2" fill="none"></path>
+
+  <!-- Hiring check mark -->
+  <path d="M15 14l2 2 4-4" stroke="#22c55e" stroke-width="2" fill="none"></path>
+</svg>

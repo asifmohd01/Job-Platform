@@ -12,6 +12,7 @@ import JobDetailsPage from "./pages/JobDetailsPage";
 import CandidateDashboard from "./pages/CandidateDashboard";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import CandidateProfile from "./pages/CandidateProfile";
 
 export default function App() {
   const { user } = useAuth();
@@ -58,6 +59,24 @@ export default function App() {
                 <CandidateDashboard />
               </MainLayout>
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute role="candidate">
+              <MainLayout>
+                <CandidateProfile />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/candidate/:candidateId"
+          element={
+            <MainLayout>
+              <CandidateProfile />
+            </MainLayout>
           }
         />
 

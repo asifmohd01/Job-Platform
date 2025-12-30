@@ -73,14 +73,14 @@ The project includes a **complete CI/CD pipeline using Jenkins, Docker, and Kube
 
 ```
 Job-Portal/
-├── client/                 # React frontend
-├── server/                 # Node.js backend
+├── client/                   # React frontend
+├── server/                   # Node.js backend
 ├── devops/
-│   ├── docker/             # Dockerfiles
-│   ├── jenkins/            # Jenkinsfile
-│   ├── helm/               # Helm charts
-│   └── README.md           # DevOps documentation
-├── screenshots/            # Project screenshots
+│   ├── docker/               # Dockerfiles
+│   ├── jenkins/              # Jenkinsfile
+│   ├── helm/                 # Helm charts
+│   └── deployment-setup.md   # DevOps documentation
+├── screenshots/              # Project screenshots
 └── README.md
 ```
 

@@ -1,0 +1,47 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_USER = "your-dockerhub-username"
+    BACKEND_IMAGE  = "job-portal-backend"
+    FRONTEND_IMAGE = "job-portal-frontend"
+    KUBE_NAMESPACE = "job-portal"
+  }
+
+  stages {
+
+    stage('Checkout Code') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Docker Images') {
+      steps {
+        sh '''
+        docker build -t $DOCKERHUB_USER/$BACKEND_IMAGE -f devops/docker/Dockerfile.backend server
+        docker build -t $DOCKERHUB_USER/$FRONTEND_IMAGE -f devops/docker/Dockerfile.frontend client
+        '''
+      }
+    }
+
+    stage('Push Images to Docker Hub') {
+      steps {
+        sh '''
+        docker push $DOCKERHUB_USER/$BACKEND_IMAGE
+        docker push $DOCKERHUB_USER/$FRONTEND_IMAGE
+        '''
+      }
+    }
+
+    stage('Deploy to Kubernetes (Helm)') {
+      steps {
+        sh '''
+        helm upgrade --install job-portal devops/helm/job-portal \
+          --namespace $KUBE_NAMESPACE \
+          --create-namespace
+        '''
+      }
+    }
+  }
+}

@@ -1,154 +1,114 @@
+---
+# Job Portal Platform – Full Stack with DevOps
+
+This is a **full-stack Job Portal Platform** built to support real-world hiring workflows.
+The platform allows **candidates to create profiles and apply for jobs**, while **recruiters post jobs and manage applications**.
+The project includes a **complete CI/CD pipeline using Jenkins, Docker, and Kubernetes**, deployed on **AWS EC2**.
+---
+
+## Table of Contents
+
+- Features
+- Technologies Used
+- Project Structure
+- Prerequisites
+- Local Development Setup
+- CI/CD Pipeline
+- Deployment
+- Scripts
+- Screenshots
+- Contact
 
 ---
 
-# Job Portal Platform
-
-A full-stack job portal platform where **candidates apply for jobs**, **recruiters manage hiring**, and **admins control the system**.
-Built with a modern tech stack and designed to scale into an AI-powered recruitment platform.
-
----
-
-## 🚀 Project Overview
-
-This project is a **production-ready job portal application** implementing real-world hiring workflows used by companies.
-It supports **role-based access**, **resume uploads**, **job management**, and a **clean SaaS-style UI**.
-
-> AI & MCP integrations are **architecturally prepared** and can be added in future versions.
-
----
-
-## ✨ Key Features
-
-### Authentication & Roles
-
-- JWT-based authentication
-- Roles: **Candidate, Recruiter, Admin**
-- Protected routes & role-based access
+## Features
 
 ### Candidate
 
-- Create and edit detailed profile
+- Create and manage detailed profile
 - Upload, view, and download resume (Cloudinary)
-- Browse and filter jobs
-- Apply for jobs
-- Track applications
+- Browse and apply for jobs
+- Track applied jobs
 
 ### Recruiter
 
-- Create, edit, delete job posts
+- Create, update, and delete job postings
 - View only jobs posted by them
-- View candidates who applied
-- Access full candidate profiles (read-only)
+- View candidate applications
+- Access candidate profiles in read-only mode
 
-### Admin
+### DevOps
 
-- View all users
-- Block or delete users
-- View all jobs
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- React.js (Vite)
-- Tailwind CSS
-- React Router DOM
-- Axios
-- Context API
-- Fully responsive UI
-
-### Backend
-
-- Node.js
-- Express.js
-- MongoDB Atlas + Mongoose
-- JWT Authentication
-- Role-Based Access Control
-
-### Media
-
-- Cloudinary (resume uploads)
-
-### DevOps (Implemented)
-
-- Docker
-- Jenkins (CI/CD)
-- Kubernetes
-- Ansible (infrastructure provisioning)
+- Automated CI/CD pipeline using Jenkins
+- Dockerized frontend and backend
+- Kubernetes deployment on AWS EC2 (single-node cluster)
+- ReplicaSets for high availability
+- Load balancing and health monitoring
+- Rolling updates and rollbacks using Helm charts
 
 ---
 
-## 📸 Screenshots
+## Technologies Used
 
-> _(Add screenshots here once deployed or running locally)_
+### Application
+
+- **Frontend:** React (Vite), Tailwind CSS
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB Atlas
+- **Authentication:** JWT
+- **Media Storage:** Cloudinary
+
+### DevOps
+
+- **Docker:** Containerization
+- **Docker Hub:** Image registry
+- **Jenkins:** CI/CD automation
+- **Kubernetes:** Container orchestration
+- **Helm:** Kubernetes package management
+- **AWS EC2:** Infrastructure
+
+---
+
+## Project Structure
 
 ```
-/screenshots
-├── login.png
-├── candidate-dashboard.png
-├── recruiter-dashboard.png
-├── job-listing.png
-├── candidate-profile.png
+Job-Portal/
+├── client/                 # React frontend
+├── server/                 # Node.js backend
+├── devops/
+│   ├── docker/             # Dockerfiles
+│   ├── jenkins/            # Jenkinsfile
+│   ├── helm/               # Helm charts
+│   └── README.md           # DevOps documentation
+├── screenshots/            # Project screenshots
+└── README.md
 ```
 
 ---
 
-## 📁 Project Structure
+## Prerequisites
 
-```
-Job-Platform/
-├── server/
-│   ├── config/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middlewares/
-│   ├── services/
-│   ├── utils/
-│   ├── index.js
-│   └── package.json
-│
-├── client/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-```
+Make sure the following tools are installed:
+
+- Node.js and npm
+- Docker and Docker Hub account
+- Jenkins
+- Kubernetes (`kubectl`)
+- Helm
+- AWS EC2 (Ubuntu instance)
 
 ---
 
-## ⚙️ Environment Setup
+## Local Development Setup
 
-### Backend `.env`
+### Clone the repository
 
-Create `server/.env`:
-
-```env
-PORT=5000
-NODE_ENV=development
-
-MONGODB_URI=your_mongodb_atlas_url
-
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRES_IN=7d
-
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+```bash
+git clone https://github.com/asifmohd01/Job-Portal.git
+cd Job-Portal
 ```
 
----
-
-## ▶️ Project Setup (Local)
-
-### 1️⃣ Backend
+### Backend Setup
 
 ```bash
 cd server
@@ -156,15 +116,13 @@ npm install
 npm run dev
 ```
 
-Backend runs at:
+Backend runs on:
 
 ```
 http://localhost:5000
 ```
 
----
-
-### 2️⃣ Frontend
+### Frontend Setup
 
 ```bash
 cd client
@@ -172,7 +130,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at:
+Frontend runs on:
 
 ```
 http://localhost:5173
@@ -180,93 +138,159 @@ http://localhost:5173
 
 ---
 
-## 🔗 API Overview
+## CI/CD Pipeline
 
-### Auth
+### Jenkins Pipeline
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
+This project uses **Jenkins for CI/CD automation**.
 
-### Jobs
+The pipeline performs:
 
-- `GET /api/jobs`
-- `POST /api/jobs` (Recruiter)
-- `PUT /api/jobs/:id`
-- `DELETE /api/jobs/:id`
+- Cloning the GitHub repository (single source of truth)
+- Building Docker images for frontend and backend
+- Pushing images to Docker Hub
+- Deploying the application to Kubernetes using Helm
 
-### Applications
+### Pipeline Steps
 
-- `POST /api/applications/:jobId/apply`
-- `GET /api/applications/:jobId`
-
-### Admin
-
-- `GET /api/admin/users`
-- `PUT /api/admin/users/:id/block`
-- `DELETE /api/admin/users/:id`
+1. **Clone Repository** – Jenkins pulls the latest code from GitHub
+2. **Build Docker Images** – Docker builds production-ready images
+3. **Push to Docker Hub** – Images are pushed to the registry
+4. **Deploy to Kubernetes** – Helm performs rolling updates
 
 ---
 
-## 🔐 Resume Handling (Important)
+## Deployment
 
-- Resumes stored in **Cloudinary**
-- Resume access is **secured via backend**
-- Supports:
+### Docker
 
-  - View resume in same tab
-  - Download resume
-  - Replace resume
+- Frontend and backend are containerized
+- Images are stored in Docker Hub
 
-- No direct Cloudinary access from frontend
+### Kubernetes
 
----
+- Single-node Kubernetes cluster on AWS EC2
+- ReplicaSets for availability
+- Services for load balancing
+- Health checks and self-healing pods
 
-## 🧠 Architecture Highlights
+### Helm
 
-- Clean separation of concerns
-- Centralized error handling
-- Secure JWT middleware
-- Cloudinary streaming (no disk storage)
-- DB-level duplicate application prevention
-- AI & MCP-ready service layer
+- Application deployed using Helm charts
+- Version-controlled deployments
+- Supports rollback and controlled rollouts
 
 ---
 
-## 🚧 Future Enhancements
+## Scripts
 
-- AI resume parsing & matching
-- MCP integration
-- Real-time notifications
-- Analytics dashboards
-- Mobile app (React Native)
-- Advanced recruiter workflows
+Infrastructure setup commands (Docker, Kubernetes, Jenkins installation) are **documented in `devops/deployment-setup.md`** instead of scripts, as they are one-time environment setup steps.
+
+This keeps the repository clean and production-aligned.
 
 ---
 
-## 📌 Production Checklist
+## Screenshots
 
-- Secure secrets
-- Enable HTTPS
-- Rate limiting
-- Input validation
-- Logging & monitoring
-- CI/CD automation
+Got it 👍
+Below is a **clean, short, professional `README.md` screenshots section**, written **exactly in the style you showed**, but adapted for **your Job Portal project**.
+
+You can **copy-paste this directly** into your `README.md`.
 
 ---
 
-## 📄 License
+## 📸 Screenshots
 
-MIT License
+### Home Page
+
+![Home Page](screenshots/home.png)
+
+* **Platform Overview**: Landing page introducing the job portal with role-based access for candidates and recruiters.
 
 ---
 
-## 👨‍💻 Author
+### Candidate Dashboard
+
+![Candidate Dashboard](screenshots/candidate-dashboard.png)
+
+* **Candidate Overview**: Displays applied jobs, profile completion status, and quick access to profile sections.
+
+---
+
+### Recruiter Dashboard
+
+![Recruiter Dashboard](screenshots/recruiter-dashboard.png)
+
+* **Recruiter Overview**: Shows jobs posted by the recruiter, application counts, and hiring activity.
+
+---
+
+### Job Listings
+
+![Job Listings](screenshots/job-listings.png)
+
+* **Browse Jobs**: Candidates can browse and filter jobs by location, skills, and job type.
+
+---
+
+### Job Details
+
+![Job Details](screenshots/job-details.png)
+
+* **Job Description View**: Complete job details with apply option and recruiter information.
+
+---
+
+### Candidate Profile
+
+![Candidate Profile](screenshots/candidate-profile.png)
+
+* **Profile Management**: Section-wise editable profile including summary, experience, skills, education, and resume.
+
+---
+
+### Candidate Applications
+
+![Candidate Applications](screenshots/candidate-my-applications.png)
+---
+
+### Recruiter – Applications View
+
+![Applications](screenshots/applications.png)
+
+* **Application Management**: Recruiters can view candidate applications and access candidate profiles in read-only mode.
+
+---
+
+### Recruiter – Post Job
+
+![Post Job](screenshots/post-job.png)
+---
+
+### Jenkins CI/CD Pipeline
+
+![Jenkins Pipeline](screenshots/jenkins-pipeline.png)
+
+* **CI/CD Automation**: Jenkins pipeline showing build, Docker image creation, push, and Kubernetes deployment.
+
+---
+
+<!-- ### Kubernetes Deployment
+
+![Kubernetes](screenshots/kubernetes.png)
+
+* **Kubernetes Cluster**: Running pods, services, and deployments on AWS EC2 using Helm charts.
+
+--- -->
+
+## Contact
 
 **Asif Mohd**
 B.Tech – Information Science & Engineering
+
+📧 Email: [asifmohd3840@gmail.com](mailto:asifmohd3840@gmail.com)
 🔗 GitHub: [https://github.com/asifmohd01](https://github.com/asifmohd01)
 🔗 LinkedIn: [https://linkedin.com/in/asifmohd01](https://linkedin.com/in/asifmohd01)
+🔗 Portfolio: [https://asifmohd-portfolio.vercel.app/](https://asifmohd-portfolio.vercel.app/)
 
 ---
-

@@ -1,0 +1,20 @@
+backend:
+  image: your-dockerhub-username/job-portal-backend
+  replicas: 2
+  port: 5000
+
+frontend:
+  image: your-dockerhub-username/job-portal-frontend
+  replicas: 2
+  port: 80
+
+service:
+  type: NodePort
+
+secrets:
+  mongoUri: "mongodb+srv://username:password@cluster.mongodb.net/jobportal"
+  jwtSecret: "your_super_secure_jwt_secret"
+  cloudinary:
+    cloudName: "your_cloud_name"
+    apiKey: "your_api_key"
+    apiSecret: "your_api_secret"

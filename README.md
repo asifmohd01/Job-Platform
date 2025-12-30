@@ -285,12 +285,13 @@ You can **copy-paste this directly** into your `README.md`.
 
 ## Contact
 
-**Asif Mohd**
-B.Tech – Information Science & Engineering
+**Asif Mohd**  
+B.Tech – Information Science & Engineering  
 
-📧 Email: [asifmohd3840@gmail.com](mailto:asifmohd3840@gmail.com)
-🔗 GitHub: [https://github.com/asifmohd01](https://github.com/asifmohd01)
-🔗 LinkedIn: [https://linkedin.com/in/asifmohd01](https://linkedin.com/in/asifmohd01)
+📧 Email: [asifmohd3840@gmail.com](mailto:asifmohd3840@gmail.com)  
+📞 Phone: +91 8491040620  
+🔗 GitHub: [https://github.com/asifmohd01](https://github.com/asifmohd01)  
+🔗 LinkedIn: [https://linkedin.com/in/asifmohd01](https://linkedin.com/in/asifmohd01)  
 🔗 Portfolio: [https://asifmohd-portfolio.vercel.app/](https://asifmohd-portfolio.vercel.app/)
 
 ---
